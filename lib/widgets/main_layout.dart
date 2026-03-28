@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:heal_link_manange/controllers/counselor_auth_controller.dart';
 import '../theme/app_colors.dart';
 import '../pages/dashboard_page.dart';
 import '../pages/clients_page.dart';
@@ -7,14 +8,15 @@ import '../pages/sessions_page.dart';
 import '../pages/analytics_page.dart';
 import '../pages/profile_page.dart';
 
-class MainLayout extends StatefulWidget {
-  const MainLayout({super.key});
+class MainCounselorLayout extends StatefulWidget {
+  const MainCounselorLayout({super.key});
 
   @override
-  State<MainLayout> createState() => _MainLayoutState();
+  State<MainCounselorLayout> createState() => _MainCounselorLayoutState();
 }
 
-class _MainLayoutState extends State<MainLayout> {
+class _MainCounselorLayoutState extends State<MainCounselorLayout> {
+  final _authController = CounselorAuthController();
   int _selectedIndex = 0;
   bool _isSidebarExpanded = true;
 
@@ -259,7 +261,9 @@ class _MainLayoutState extends State<MainLayout> {
           _buildFooterItem(
             icon: Icons.logout,
             label: '退出登录',
-            onTap: () {},
+            onTap: () async {
+              await _authController.signOutUser(context: context);
+            },
             isDanger: true,
           ),
         ],
