@@ -1,10 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:heal_link_manange/provider/counselor_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
 
+  @override
+  ConsumerState<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends ConsumerState<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -31,7 +41,7 @@ class DashboardPage extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('欢迎回来，王医生', style: Theme.of(context).textTheme.displaySmall),
+            Text('欢迎回来，刘医生', style: Theme.of(context).textTheme.displaySmall),
             const SizedBox(height: 8),
             Text(
               '今天是 2026年3月28日，您有 4 个预约',

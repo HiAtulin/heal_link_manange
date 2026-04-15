@@ -16,7 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 final ProviderContainer providerContainer = ProviderContainer();
 
 class CounselorAuthController {
-  Future<void> signUpCounselor({
+  Future<void> registerCounselor({
     required String fullName,
     required String gender,
     required int age,
@@ -73,7 +73,7 @@ class CounselorAuthController {
   }
 
   Future<void> signInCounselor({
-    required String phone,
+    required String email,
     required String password,
     required context,
   }) async {
@@ -84,7 +84,7 @@ class CounselorAuthController {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
-          'phone': phone,
+          'email': email,
           'password': password,
         }),
       );
@@ -116,6 +116,7 @@ class CounselorAuthController {
       showSnackBar(context, '${e.toString()}');
     }
   }
+
   Future<void> signOutUser({required context}) async {
     try {
       SharedPreferences preferences = await SharedPreferences.getInstance();

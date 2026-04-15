@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:heal_link_manange/controllers/counselor_auth_controller.dart';
 import '../../../theme/app_colors.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -14,6 +15,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _counselorAuthController = CounselorAuthController();
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -31,6 +33,25 @@ class _RegisterPageState extends State<RegisterPage> {
       setState(() {
         _isLoading = true;
       });
+      _counselorAuthController.registerCounselor(
+        fullName: _nameController.text,
+        email: _emailController.text,
+        phone: _phoneController.text,
+        password: _passwordController.text,
+        context: context,
+        gender: '',
+        age: 0,
+        title: '',
+        major: [],
+        qualification: [],
+        introduction: '',
+        status: '',
+        avatar: '',
+        createdAt: '',
+        updatedAt: '',
+        experience: 0,
+      );
+
       Future.delayed(const Duration(seconds: 2), () {
         setState(() {
           _isLoading = false;

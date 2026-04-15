@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:heal_link_manange/controllers/counselor_auth_controller.dart';
 import '../../../theme/app_colors.dart';
 
 class LoginPage extends StatefulWidget {
@@ -10,14 +11,16 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _counselorAuthController = CounselorAuthController();
+
   bool _isLoading = false;
   bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -27,6 +30,11 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _isLoading = true;
       });
+      _counselorAuthController.signInCounselor(
+        email: _emailController.text,
+        password: _passwordController.text,
+        context: context,
+      );
       Future.delayed(const Duration(seconds: 2), () {
         setState(() {
           _isLoading = false;
@@ -270,12 +278,12 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 32),
               TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  labelText: '手机号',
-                  hintText: '请输入手机号',
-                  prefixIcon: const Icon(Icons.phone),
+                  labelText: '邮箱',
+                  hintText: '请输入邮箱',
+                  prefixIcon: const Icon(Icons.email),
                   filled: true,
                   fillColor: AppColors.surfaceVariant,
                   border: OutlineInputBorder(
@@ -296,10 +304,12 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '请输入手机号';
+                    return '请输入邮箱';
                   }
-                  if (value.length != 11) {
-                    return '请输入正确的手机号';
+                  if (!RegExp(
+                    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                  ).hasMatch(value)) {
+                    return '请输入正确的邮箱';
                   }
                   return null;
                 },
