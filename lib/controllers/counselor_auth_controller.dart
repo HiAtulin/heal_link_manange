@@ -65,9 +65,9 @@ class CounselorAuthController {
         context: context,
         onSuccess: () {
           showSnackBar(context, '咨询师注册成功！');
-          onComplete();
         },
       );
+      onComplete();
     } catch (e) {
       showSnackBar(context, '${e.toString()}');
       onComplete();
@@ -116,9 +116,9 @@ class CounselorAuthController {
             (route) => false,
           );
           showSnackBar(context, '咨询师登录成功！');
-          onComplete();
         },
       );
+      onComplete();
     } catch (e) {
       showSnackBar(context, '${e.toString()}');
       onComplete();

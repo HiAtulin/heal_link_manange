@@ -37,7 +37,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         context: context,
         ref: ref,
         onComplete: () {
-          if (mounted) {
+          if (mounted) {//确保组件已挂载
             setState(() {
               _isLoading = false;
             });
