@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heal_link_manange/controllers/counselor_auth_controller.dart';
+import 'package:heal_link_manange/provider/counselor_provider.dart';
 import '../theme/app_colors.dart';
 import '../pages/dashboard_page.dart';
 import '../pages/clients_page.dart';
@@ -8,14 +10,15 @@ import '../pages/sessions_page.dart';
 import '../pages/analytics_page.dart';
 import '../pages/profile_page.dart';
 
-class MainCounselorLayout extends StatefulWidget {
+class MainCounselorLayout extends ConsumerStatefulWidget {
   const MainCounselorLayout({super.key});
 
   @override
-  State<MainCounselorLayout> createState() => _MainCounselorLayoutState();
+  ConsumerState<MainCounselorLayout> createState() =>
+      _MainCounselorLayoutState();
 }
 
-class _MainCounselorLayoutState extends State<MainCounselorLayout> {
+class _MainCounselorLayoutState extends ConsumerState<MainCounselorLayout> {
   final _authController = CounselorAuthController();
   int _selectedIndex = 0;
   bool _isSidebarExpanded = true;
@@ -262,7 +265,7 @@ class _MainCounselorLayoutState extends State<MainCounselorLayout> {
             icon: Icons.logout,
             label: '退出登录',
             onTap: () async {
-              await _authController.signOutUser(context: context);
+              await _authController.signOutUser(context: context, ref: ref);
             },
             isDanger: true,
           ),
@@ -403,18 +406,18 @@ class _MainCounselorLayoutState extends State<MainCounselorLayout> {
                 ),
               ),
               const SizedBox(width: 12),
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '王医生',
-                    style: TextStyle(
+                    ref.watch(counselorProvider)?.fullName ?? '咨询师',
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  Text(
+                  const Text(
                     '心理咨询师',
                     style: TextStyle(
                       fontSize: 12,

@@ -1,26 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_colors.dart';
+import '../provider/counselor_provider.dart';
+import '../models/counselor.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  ConsumerState<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends ConsumerState<ProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController(text: '王医生');
-  final _emailController = TextEditingController(text: 'wang@example.com');
-  final _phoneController = TextEditingController(text: '138****1234');
-  final _licenseController = TextEditingController(text: '心理咨询师证书编号：ABC123456');
-  final _specialtyController = TextEditingController(text: '焦虑症、抑郁症、人际关系咨询');
-  final _experienceController = TextEditingController(text: '10年心理咨询经验');
-  final _bioController = TextEditingController(
-    text: '资深心理咨询师，专注于焦虑症、抑郁症等心理问题的治疗。拥有丰富的临床经验，善于运用认知行为疗法、精神分析等多种治疗方法。',
-  );
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _licenseController = TextEditingController();
+  final _specialtyController = TextEditingController();
+  final _experienceController = TextEditingController();
+  final _bioController = TextEditingController();
 
   bool _isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCounselorData();
+  }
+
+  void _loadCounselorData() {
+    final counselor = ref.read(counselorProvider);
+    if (counselor != null) {
+      setState(() {
+        _nameController.text = counselor.fullName;
+        _emailController.text = counselor.email;
+        _phoneController.text = counselor.phone;
+        _licenseController.text = counselor.qualification.isNotEmpty
+            ? '心理咨询师证书编号：${counselor.qualification[0]}'
+            : '';
+        _specialtyController.text = counselor.major.join('、');
+        _experienceController.text = '${counselor.experience}年心理咨询经验';
+        _bioController.text = counselor.introduction;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -44,14 +68,9 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 24),
           Row(
             children: [
-              Expanded(
-                flex: 2,
-                child: _buildProfileCard(),
-              ),
+              Expanded(flex: 2, child: _buildProfileCard()),
               const SizedBox(width: 24),
-              Expanded(
-                child: _buildSettingsCard(),
-              ),
+              Expanded(child: _buildSettingsCard()),
             ],
           ),
         ],
@@ -63,10 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          '个人资料',
-          style: Theme.of(context).textTheme.displaySmall,
-        ),
+        Text('个人资料', style: Theme.of(context).textTheme.displaySmall),
         if (!_isEditing)
           ElevatedButton.icon(
             onPressed: () {
@@ -117,7 +133,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -152,9 +171,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       gradient: AppColors.primaryGradient,
                       borderRadius: BorderRadius.circular(60),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
-                        '王',
+                        _nameController.text[0],
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 48,
@@ -203,7 +222,7 @@ class _ProfilePageState extends State<ProfilePage> {
               controller: _emailController,
               label: '邮箱',
               icon: Icons.email,
-              enabled: _isEditing,
+              enabled: false,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return '请输入邮箱';
@@ -219,7 +238,7 @@ class _ProfilePageState extends State<ProfilePage> {
               controller: _phoneController,
               label: '电话',
               icon: Icons.phone,
-              enabled: _isEditing,
+              enabled: false,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return '请输入电话';
@@ -325,7 +344,10 @@ class _ProfilePageState extends State<ProfilePage> {
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: AppColors.error, width: 1),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
         ),
       ],
@@ -343,10 +365,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '账户设置',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          Text('账户设置', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 24),
           _buildSettingItem(
             icon: Icons.lock,

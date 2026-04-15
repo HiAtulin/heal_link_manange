@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:heal_link_manange/models/counselor.dart';
 import 'package:heal_link_manange/provider/counselor_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
@@ -41,10 +42,13 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('欢迎回来，刘医生', style: Theme.of(context).textTheme.displaySmall),
+            Text(
+              '欢迎回来，${ref.watch(counselorProvider)?.fullName ?? '咨询师'}',
+              style: Theme.of(context).textTheme.displaySmall,
+            ),
             const SizedBox(height: 8),
             Text(
-              '今天是 2026年3月28日，您有 4 个预约',
+              '今天是${DateTime.now().year}年${DateTime.now().month}月${DateTime.now().day}日，您有 4 个预约',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],

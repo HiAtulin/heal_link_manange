@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heal_link_manange/controllers/counselor_auth_controller.dart';
 import '../../../theme/app_colors.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -39,6 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
         phone: _phoneController.text,
         password: _passwordController.text,
         context: context,
+        ref: ref,
         gender: '',
         age: 0,
         title: '',
@@ -50,14 +52,14 @@ class _RegisterPageState extends State<RegisterPage> {
         createdAt: '',
         updatedAt: '',
         experience: 0,
+        onComplete: () {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+          }
+        },
       );
-
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          _isLoading = false;
-        });
-        Navigator.of(context).pushReplacementNamed('/login');
-      });
     }
   }
 

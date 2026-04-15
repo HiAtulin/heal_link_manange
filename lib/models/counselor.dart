@@ -59,22 +59,34 @@ class Counselor {
   String toJson() => jsonEncode(toMap());
 
   factory Counselor.fromMap(Map<String, dynamic> map) => Counselor(
-    id: map['_id'] ?? '',
-    fullName: map['fullName'] ?? '',
-    gender: map['gender'] ?? '',
-    age: map['age'] ?? 0,
-    phone: map['phone'] ?? '',
-    password: map['password'] ?? '',
-    email: map['email'] ?? '',
-    title: map['title'] ?? '',
-    major: map['major'] ?? [],
-    qualification: map['qualification'] ?? [],
-    experience: map['experience'] ?? 0,
-    introduction: map['introduction'] ?? '',
-    status: map['status'] ?? '',
-    avatar: map['avatar'] ?? '',
-    createdAt: map['createdAt'] ?? '',
-    updatedAt: map['updatedAt'] ?? '',
+    id: map['_id']?.toString() ?? '',
+    fullName: map['fullName']?.toString() ?? '',
+    gender: map['gender']?.toString() ?? '',
+    age: map['age'] is int
+        ? map['age']
+        : int.tryParse(map['age']?.toString() ?? '0') ?? 0,
+    phone: map['phone']?.toString() ?? '',
+    password: map['password']?.toString() ?? '',
+    email: map['email']?.toString() ?? '',
+    title: map['title']?.toString() ?? '',
+    major: map['major'] is List<String>
+        ? map['major'] as List<String>
+        : (map['major'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+              [],
+    qualification: map['qualification'] is List<String>
+        ? map['qualification'] as List<String>
+        : (map['qualification'] as List<dynamic>?)
+                  ?.map((e) => e.toString())
+                  .toList() ??
+              [],
+    experience: map['experience'] is int
+        ? map['experience']
+        : int.tryParse(map['experience']?.toString() ?? '0') ?? 0,
+    introduction: map['introduction']?.toString() ?? '',
+    status: map['status']?.toString() ?? '',
+    avatar: map['avatar']?.toString() ?? '',
+    createdAt: map['createdAt']?.toString() ?? '',
+    updatedAt: map['updatedAt']?.toString() ?? '',
   );
 
   factory Counselor.fromJson(String json) =>

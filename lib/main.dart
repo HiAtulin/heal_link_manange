@@ -23,7 +23,7 @@ class MyApp extends ConsumerWidget {
       String? token = prefs.getString('auth_token');
       String? counselorJson = prefs.getString('counselor');
       if (token != null && counselorJson != null) {
-        ref.read(counselorProvider.notifier).setounselor(counselorJson);
+        ref.read(counselorProvider.notifier).setCounselor(counselorJson);
       } else {
         ref.read(counselorProvider.notifier).signOut();
       }

@@ -13,8 +13,6 @@ import 'package:http/http.dart' as http;
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-final ProviderContainer providerContainer = ProviderContainer();
-
 class CounselorAuthController {
   Future<void> registerCounselor({
     required String fullName,
@@ -33,6 +31,8 @@ class CounselorAuthController {
     required String password,
     required int experience,
     required context,
+    required WidgetRef ref,
+    required Function() onComplete,
   }) async {
     try {
       Counselor counselor = Counselor(
@@ -65,10 +65,12 @@ class CounselorAuthController {
         context: context,
         onSuccess: () {
           showSnackBar(context, '咨询师注册成功！');
+          onComplete();
         },
       );
     } catch (e) {
       showSnackBar(context, '${e.toString()}');
+      onComplete();
     }
   }
 
@@ -76,6 +78,8 @@ class CounselorAuthController {
     required String email,
     required String password,
     required context,
+    required WidgetRef ref,
+    required Function() onComplete,
   }) async {
     try {
       http.Response response = await http.post(
@@ -92,15 +96,17 @@ class CounselorAuthController {
         response: response,
         context: context,
         onSuccess: () async {
+          print(response.body);
           SharedPreferences prefs = await SharedPreferences.getInstance();
           String token = jsonDecode(response.body)['token'];
           await prefs.setString('auth_token', token);
-          final vendorJson = jsonDecode(response.body)['vendor'];
-          providerContainer
+          final counselorJson = jsonDecode(response.body)['counselor'];
+          print(counselorJson);
+          ref
               .read(counselorProvider.notifier)
-              .setounselor(jsonEncode(vendorJson));
+              .setCounselor(jsonEncode(counselorJson));
 
-          await prefs.setString('counselor', jsonEncode(vendorJson));
+          await prefs.setString('counselor', jsonEncode(counselorJson));
 
           Navigator.pushAndRemoveUntil(
             context,
@@ -109,20 +115,22 @@ class CounselorAuthController {
             ),
             (route) => false,
           );
-          showSnackBar(context, 'Counselor signed in successfully');
+          showSnackBar(context, '咨询师登录成功！');
+          onComplete();
         },
       );
     } catch (e) {
       showSnackBar(context, '${e.toString()}');
+      onComplete();
     }
   }
 
-  Future<void> signOutUser({required context}) async {
+  Future<void> signOutUser({required context, required WidgetRef ref}) async {
     try {
       SharedPreferences preferences = await SharedPreferences.getInstance();
       await preferences.remove('auth_token');
-      await preferences.remove('user');
-      providerContainer.read(counselorProvider.notifier).signOut();
+      await preferences.remove('counselor');
+      ref.read(counselorProvider.notifier).signOut();
 
       Navigator.pushAndRemoveUntil(
         context,

@@ -2,29 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heal_link_manange/models/counselor.dart';
 
 class CounselorProvider extends StateNotifier<Counselor?> {
-  CounselorProvider()
-    : super(
-        Counselor(
-          id: '',
-          fullName: '',
-          email: '',
-          password: '',
-          gender: '',
-          age: 0,
-          phone: '',
-          title: '',
-          major: const [],
-          qualification: const [],
-          experience: 0,
-          introduction: '',
-          status: '',
-          avatar: '',
-          createdAt: '',
-          updatedAt: '',
-        ),
-      );
+  CounselorProvider() : super(null);
   Counselor? get counselor => state;
-  void setounselor(String counselorJson) {
+  void setCounselor(String counselorJson) {
     state = Counselor.fromJson(counselorJson);
   }
 
