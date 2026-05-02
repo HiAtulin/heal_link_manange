@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:heal_link_manange/controllers/booking_controller.dart';
+import 'package:heal_link_manange/models/booking.dart';
 import 'package:heal_link_manange/models/counselor.dart';
+import 'package:heal_link_manange/provider/booking_provider.dart';
 import 'package:heal_link_manange/provider/counselor_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
@@ -16,14 +19,81 @@ class DashboardPage extends ConsumerStatefulWidget {
 }
 
 class _DashboardPageState extends ConsumerState<DashboardPage> {
+  bool _hasFetchedBookings = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasFetchedBookings) {
+      _getBookings();
+      _hasFetchedBookings = true;
+    }
+  }
+
+  Future<void> _getBookings() async {
+    final counselor = ref.watch(counselorProvider);
+    if (counselor == null) {
+      print("counselor is null");
+      return;
+    }
+    final BookingController counselorController = BookingController();
+    try {
+      final bookings = await counselorController.getBookingsByCounselor(
+        context: context,
+        counselorId: counselor.id,
+      );
+      ref.read(bookingProvider.notifier).setBookings(bookings);
+    } catch (e) {
+      print("获取预约失败错误: $e");
+    }
+  }
+
+  int getNum() {
+    final bookings = ref.watch(bookingProvider);
+    // 使用Set去重，获取唯一的userId集合
+    final uniqueUserIds = Set<String>();
+    for (var booking in bookings) {
+      if (booking.userId.isNotEmpty) {
+        uniqueUserIds.add(booking.userId);
+      }
+    }
+    return uniqueUserIds.length;
+  }
+
+  //获取今日预约数量
+  int getTodayNum() {
+    final bookings = ref.watch(bookingProvider);
+    final today = DateTime.now().toLocal().toIso8601String().substring(0, 10);
+    final List<BookingModel> todayBookings = bookings
+        .where((booking) => booking.startTime.contains(today))
+        .toList();
+    return todayBookings.length;
+  }
+
+  //本月预约数量
+  int getMonthNum() {
+    final bookings = ref.watch(bookingProvider);
+    final today = DateTime.now().toLocal().toIso8601String().substring(0, 7);
+    final List<BookingModel> monthBookings = bookings
+        .where((booking) => booking.startTime.contains(today))
+        .toList();
+    return monthBookings.length;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final counselor = ref.watch(counselorProvider);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildWelcomeSection(context),
+          _buildWelcomeSection(context, counselor!),
           const SizedBox(height: 24),
           _buildStatsGrid(),
           const SizedBox(height: 24),
@@ -35,7 +105,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     );
   }
 
-  Widget _buildWelcomeSection(BuildContext context) {
+  Widget _buildWelcomeSection(BuildContext context, Counselor counselor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -43,12 +113,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '欢迎回来，${ref.watch(counselorProvider)?.fullName ?? '咨询师'}',
+              '欢迎回来，${counselor.fullName}',
               style: Theme.of(context).textTheme.displaySmall,
             ),
             const SizedBox(height: 8),
             Text(
-              '今天是${DateTime.now().year}年${DateTime.now().month}月${DateTime.now().day}日，您有 4 个预约',
+              '今天是${DateTime.now().year}年${DateTime.now().month}月${DateTime.now().day}日，您有 ${getTodayNum()}个预约',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -82,7 +152,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           icon: Icons.people,
           iconColor: AppColors.primary,
           iconBgColor: AppColors.primary.withOpacity(0.1),
-          value: '85',
+          value: getNum().toString(),
           label: '总客户数',
           badge: '+12%',
           badgeColor: AppColors.successLight,
@@ -92,7 +162,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           icon: Icons.calendar_month,
           iconColor: AppColors.secondary,
           iconBgColor: AppColors.secondary.withOpacity(0.1),
-          value: '4',
+          value: getTodayNum().toString(),
           label: '今日预约',
           badge: '今日',
           badgeColor: AppColors.infoLight,
@@ -102,7 +172,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           icon: Icons.trending_up,
           iconColor: AppColors.accent,
           iconBgColor: AppColors.accent.withOpacity(0.1),
-          value: '67',
+          value: getMonthNum().toString(),
           label: '本月咨询次数',
           badge: '本月',
           badgeColor: AppColors.primary.withOpacity(0.1),
@@ -560,6 +630,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   }
 
   Widget _buildUpcomingAppointments(BuildContext context) {
+    final bookings = ref.watch(bookingProvider);
+
     final appointments = [
       {'client': '张三', 'time': '10:00', 'type': '初诊', 'duration': '60分钟'},
       {'client': '李四', 'time': '11:30', 'type': '复诊', 'duration': '60分钟'},
