@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heal_link_manange/controllers/booking_controller.dart';
+import 'package:heal_link_manange/controllers/user_controller.dart';
 import 'package:heal_link_manange/models/booking.dart';
 import 'package:heal_link_manange/models/counselor.dart';
 import 'package:heal_link_manange/provider/booking_provider.dart';
 import 'package:heal_link_manange/provider/counselor_provider.dart';
+import 'package:heal_link_manange/provider/user_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 
@@ -31,6 +33,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     super.didChangeDependencies();
     if (!_hasFetchedBookings) {
       _getBookings();
+      _getUsers();
       _hasFetchedBookings = true;
     }
   }
@@ -50,6 +53,17 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       ref.read(bookingProvider.notifier).setBookings(bookings);
     } catch (e) {
       print("获取预约失败错误: $e");
+    }
+  }
+
+  Future<void> _getUsers() async {
+    final counselor = ref.watch(counselorProvider);
+    final UserController userController = UserController();
+    try {
+      final users = await userController.getUsers(counselorId: counselor!.id);
+      ref.read(userProvider.notifier).setUsers(users);
+    } catch (e) {
+      print("获取用户失败错误: $e");
     }
   }
 

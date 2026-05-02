@@ -1,76 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:heal_link_manange/models/user.dart';
+import 'package:heal_link_manange/provider/user_provider.dart';
 import '../theme/app_colors.dart';
 
-class ClientsPage extends StatefulWidget {
+class ClientsPage extends ConsumerStatefulWidget {
   const ClientsPage({super.key});
 
   @override
-  State<ClientsPage> createState() => _ClientsPageState();
+  ConsumerState<ClientsPage> createState() => _ClientsPageState();
 }
 
-class _ClientsPageState extends State<ClientsPage> {
-  final List<Client> _clients = [
-    Client(
-      id: 1,
-      name: '张三',
-      phone: '138****1234',
-      email: 'zhangsan@example.com',
-      status: ClientStatus.active,
-      sessions: 12,
-      lastSession: '2026-03-25',
-      avatar: '张',
-    ),
-    Client(
-      id: 2,
-      name: '李四',
-      phone: '139****5678',
-      email: 'lisi@example.com',
-      status: ClientStatus.active,
-      sessions: 8,
-      lastSession: '2026-03-24',
-      avatar: '李',
-    ),
-    Client(
-      id: 3,
-      name: '王五',
-      phone: '137****9012',
-      email: 'wangwu@example.com',
-      status: ClientStatus.paused,
-      sessions: 5,
-      lastSession: '2026-03-15',
-      avatar: '王',
-    ),
-    Client(
-      id: 4,
-      name: '赵六',
-      phone: '136****3456',
-      email: 'zhaoliu@example.com',
-      status: ClientStatus.completed,
-      sessions: 15,
-      lastSession: '2026-03-10',
-      avatar: '赵',
-    ),
-    Client(
-      id: 5,
-      name: '孙七',
-      phone: '135****7890',
-      email: 'sunqi@example.com',
-      status: ClientStatus.active,
-      sessions: 3,
-      lastSession: '2026-03-28',
-      avatar: '孙',
-    ),
-    Client(
-      id: 6,
-      name: '钱八',
-      phone: '134****2345',
-      email: 'qianba@example.com',
-      status: ClientStatus.paused,
-      sessions: 7,
-      lastSession: '2026-03-20',
-      avatar: '钱',
-    ),
-  ];
+class _ClientsPageState extends ConsumerState<ClientsPage> {
+  // 将 User 转换为 Client 显示
+  Client _userToClient(User user, int index) {
+    // 根据索引模拟不同状态
+    final statuses = [
+      ClientStatus.active,
+      ClientStatus.active,
+      ClientStatus.paused,
+      ClientStatus.completed,
+      ClientStatus.active,
+      ClientStatus.paused,
+    ];
+    // 根据索引模拟咨询次数
+    final sessions = [12, 8, 5, 15, 3, 7];
+    // 根据索引模拟最后咨询日期
+    final lastSessions = [
+      '2026-03-25',
+      '2026-03-24',
+      '2026-03-15',
+      '2026-03-10',
+      '2026-03-28',
+      '2026-03-20',
+    ];
+
+    return Client(
+      id: index + 1,
+      name: user.fullName.isNotEmpty ? user.fullName : '未知用户',
+      phone: user.phone.isNotEmpty ? _maskPhone(user.phone) : '未知',
+      email: user.email.isNotEmpty ? user.email : '未知',
+      status: index < statuses.length ? statuses[index] : ClientStatus.active,
+      sessions: index < sessions.length ? sessions[index] : 0,
+      lastSession: index < lastSessions.length ? lastSessions[index] : '暂无',
+      avatar: user.fullName.isNotEmpty ? user.fullName[0] : '?',
+    );
+  }
+
+  // 手机号脱敏
+  String _maskPhone(String phone) {
+    if (phone.length >= 11) {
+      return phone.substring(0, 3) + '****' + phone.substring(7);
+    }
+    return phone;
+  }
 
   String _searchQuery = '';
   ClientStatus? _selectedStatus;
@@ -83,27 +66,23 @@ class _ClientsPageState extends State<ClientsPage> {
         const SizedBox(height: 24),
         _buildFilters(),
         const SizedBox(height: 24),
-        Expanded(
-          child: _buildClientList(),
-        ),
+        Expanded(child: _buildClientList()),
       ],
     );
   }
 
   Widget _buildHeader() {
+    final users = ref.watch(userProvider);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '客户管理',
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
+            Text('客户管理', style: Theme.of(context).textTheme.displaySmall),
             const SizedBox(height: 8),
             Text(
-              '共 ${_clients.length} 位客户',
+              '共 ${users.length} 位客户',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -147,7 +126,10 @@ class _ClientsPageState extends State<ClientsPage> {
                 hintStyle: TextStyle(color: AppColors.textTertiary),
                 prefixIcon: Icon(Icons.search, color: AppColors.textTertiary),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
             ),
           ),
@@ -168,7 +150,10 @@ class _ClientsPageState extends State<ClientsPage> {
                 DropdownMenuItem(value: null, child: Text('全部状态')),
                 DropdownMenuItem(value: ClientStatus.active, child: Text('活跃')),
                 DropdownMenuItem(value: ClientStatus.paused, child: Text('暂停')),
-                DropdownMenuItem(value: ClientStatus.completed, child: Text('完成')),
+                DropdownMenuItem(
+                  value: ClientStatus.completed,
+                  child: Text('完成'),
+                ),
               ],
               onChanged: (value) {
                 setState(() {
@@ -183,11 +168,23 @@ class _ClientsPageState extends State<ClientsPage> {
   }
 
   Widget _buildClientList() {
-    List<Client> filteredClients = _clients.where((client) {
-      final matchesSearch = client.name.contains(_searchQuery) ||
+    final users = ref.watch(userProvider);
+
+    // 将 User 列表转换为 Client 列表
+    final clients = users
+        .asMap()
+        .entries
+        .map((entry) => _userToClient(entry.value, entry.key))
+        .toList();
+
+    // 过滤客户
+    List<Client> filteredClients = clients.where((client) {
+      final matchesSearch =
+          client.name.contains(_searchQuery) ||
           client.phone.contains(_searchQuery) ||
           client.email.contains(_searchQuery);
-      final matchesStatus = _selectedStatus == null || client.status == _selectedStatus;
+      final matchesStatus =
+          _selectedStatus == null || client.status == _selectedStatus;
       return matchesSearch && matchesStatus;
     }).toList();
 
@@ -198,10 +195,7 @@ class _ClientsPageState extends State<ClientsPage> {
           children: [
             Icon(Icons.people_outline, size: 64, color: AppColors.textTertiary),
             const SizedBox(height: 16),
-            Text(
-              '未找到匹配的客户',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('未找到匹配的客户', style: Theme.of(context).textTheme.titleMedium),
           ],
         ),
       );
@@ -285,7 +279,10 @@ class _ClientsPageState extends State<ClientsPage> {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -353,11 +350,7 @@ class _ClientsPageState extends State<ClientsPage> {
   }
 }
 
-enum ClientStatus {
-  active,
-  paused,
-  completed,
-}
+enum ClientStatus { active, paused, completed }
 
 class Client {
   final int id;
